@@ -17,8 +17,11 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name',
-        'email',
+        'username',
+        'firstname',
+        'lastname',
+        'salt',
+        'type',
         'password',
     ];
 
@@ -37,7 +40,14 @@ class User extends Authenticatable
      *
      * @var array
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    protected $casts = [];
+
+    /**
+     * @param $username
+     * @return mixed
+     */
+    public static function saltByUsername(string $username)
+    {
+        return self::where('username', $username)->value('salt');
+    }
 }
