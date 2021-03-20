@@ -50,4 +50,28 @@ class User extends Authenticatable
     {
         return self::where('username', $username)->value('salt');
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAdminUser(): bool
+    {
+        return $this->type === 'admin';
+    }
+
+    /**
+     * @return bool
+     */
+    public function isRegularUser(): bool
+    {
+        return $this->type === 'regular';
+    }
 }

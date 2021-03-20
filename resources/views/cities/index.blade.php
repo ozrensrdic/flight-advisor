@@ -26,7 +26,7 @@
             </div>
         @endif
 
-        <table class="table table-bordered table-responsive-lg">
+        <table class="table table-bordered">
             <tr>
                 <th>No</th>
                 <th>Name</th>
@@ -37,25 +37,40 @@
             @foreach ($cities as $city)
                 <tr>
                     <td>{{ $city->id }}</td>
-                    <td>{{ $city->name }}</td>
+                    <td><a href="{{ route('cities.show', $city->id) }}">{{ $city->name }}</a></td>
                     <td>{{ $city->country }}</td>
                     <td>{{ $city->description }}</td>
                     <td>
-                        <form action="{{route('cities.destroy', $city->id)}}" method="POST">
+                        @auth
+                            @if (auth()->user()->isAdminUser())
+                                <form action="{{route('cities.destroy', $city->id)}}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
 
-                            <a class="btn btn-success" href="{{ route('cities.edit', $city->id) }}">
-                                {{ __('Edit') }}
-                            </a>
+                                    <a class="btn btn-success" href="{{ route('cities.edit', $city->id) }}">
+                                        {{ __('Edit') }}
+                                    </a>
 
-                            @csrf
-                            @method('DELETE')
-
-                            <button type="submit" title="delete" class="btn btn-danger">
-                                Delete
+                                    <button type="submit" title="delete" class="btn btn-danger">
+                                        Delete
+                                    </button>
+                                </form>
+                            @endif
+                            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#comments{{$city->id}}" aria-expanded="false" aria-controls="comments{{$city->id}}">
+                                Show 5 last comments
                             </button>
-                        </form>
+                        @endauth
                     </td>
                 </tr>
+                @foreach ($city->getCommentsPreview(5) as $index => $comment)
+                    <tr class="collapse" id="comments{{$city->id}}">
+                        <td colspan="4"><strong>{{$comment->user->username}}</strong>: {{$comment->comment}} <small>{{$comment->updated_at}}</small></td>
+                        @if ($index === 0)
+                            <td colspan="4"><a href="{{ route('cities.show', $city->id) }}">See all comments</a></td>
+                        @endif
+                    </tr>
+
+                @endforeach
             @endforeach
         </table>
     </div>

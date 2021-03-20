@@ -8,15 +8,16 @@ use Illuminate\Http\Request;
 use App\Models\City;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Response;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class CityController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @return View
      */
-    public function index()
+    public function index(): View
     {
         $cities = City::all();
 
@@ -24,20 +25,18 @@ class CityController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function create()
+    public function create(): View
     {
         return view('cities.create');
     }
 
     /**
      * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'name' => 'required|unique:cities',
@@ -66,34 +65,31 @@ class CityController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\City  $city
-     * @return \Illuminate\Http\Response
+     * @param  City  $city
+     * @return Response
      */
-    public function show(City $city)
+    public function show(City $city): View
     {
-        return view('cities.show', compact('city'));
+        $comments = $city->comments()->get()->sortByDesc('updated_at');
+
+        return view('cities.show', compact('city', 'comments'));
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\City $city
-     * @return \Illuminate\Http\Response
+     * @param  City $city
+     * @return Response
      */
-    public function edit(City $city)
+    public function edit(City $city): View
     {
         return view('cities.edit', compact('city'));
     }
+
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\City $city
-     * @return \Illuminate\Http\Response
+     * @param  Request  $request
+     * @param  City $city
+     * @return Response
      */
-    public function update(Request $request, City $city)
+    public function update(Request $request, City $city): Response
     {
         $request->validate([
             'name' => 'required',
@@ -106,13 +102,12 @@ class CityController extends Controller
         return redirect()->route('cities.index')
             ->with('success', 'City updated successfully');
     }
+
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\City  $city
-     * @return \Illuminate\Http\Response
+     * @param  City  $city
+     * @return Response
      */
-    public function destroy(City $city)
+    public function destroy(City $city): Response
     {
         $city->delete();
 
