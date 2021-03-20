@@ -20,6 +20,12 @@
             </div>
         @endif
 
+        @if ($error = Session::get('error'))
+            <div class="alert alert-danger">
+                <p>{{ $error }}</p>
+            </div>
+        @endif
+
         <table class="table table-bordered table-responsive-lg">
             <tr>
                 <th>No</th>

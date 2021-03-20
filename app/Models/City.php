@@ -26,4 +26,12 @@ class City extends Model
      * @var array
      */
     protected $hidden = [];
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function airports()
+    {
+        return $this->hasMany(Airport::class);
+    }
 }
