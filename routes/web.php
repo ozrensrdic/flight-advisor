@@ -28,6 +28,8 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::group(array('prefix' => 'cities'), function() {
     Route::get('search', [CityController::class, 'search'])->name('cities.search');
     Route::get('search/results', [CityController::class, 'results'])->name('cities.search.results');
+    Route::get('route', [CityController::class, 'route'])->name('cities.route');
+    Route::get('route/details', [CityController::class, 'flightDetails'])->name('cities.route.details');
 });
 
 Route::resource('cities', CityController::class);

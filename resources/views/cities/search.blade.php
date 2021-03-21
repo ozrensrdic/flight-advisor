@@ -43,7 +43,7 @@
             </tr>
         </table>
     </div>
-{{--//data-toggle="collapse" data-target="#comments{{$city->id}}"--}}
+
     <script>
         $( "#search" ).keyup(function() {
             let city = $('#search').val();
@@ -57,7 +57,7 @@
             let city = $('#search').val();
             let table = $('#comments');
             $.ajax({
-                url: '/cities/search/results',
+                url: '{{ route('cities.search.results') }}',
                 type: "GET",
                 data: {
                     city: city,

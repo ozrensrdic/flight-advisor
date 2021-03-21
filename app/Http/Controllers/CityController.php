@@ -31,9 +31,22 @@ class CityController extends Controller
         return view('cities.create');
     }
 
-    public function search()
+    /**
+     * @return View
+     */
+    public function search(): View
     {
         return view('cities.search');
+    }
+
+    /**
+     * @return View
+     */
+    public function route(): View
+    {
+        $cities = City::all()->pluck('name', 'id');
+
+        return view('cities.route', compact('cities'));
     }
 
     /**
@@ -83,13 +96,53 @@ class CityController extends Controller
      * @param Request $request
      * @return Collection
      */
-    public function results(Request $request)
+    public function results(Request $request): Collection
     {
         $city = $request->query('city');
         $cities = City::with('comments')->where('name', 'like', '%' . $city . '%')->get();
 
         return collect([
             'cities' => $cities,
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     * @return Collection
+     */
+    public function flightDetails(Request $request): Collection
+    {
+        /** @var City $sourceCity */
+        $sourceCity = City::find($request->query('source_id'));
+        /** @var City $destinationCity */
+        $destinationCity = City::find($request->query('destination_id'));
+
+        if (!$destinationCity || !$sourceCity) {
+            return collect([
+                'success' => false,
+                'error' => 'Can not find source/destination city'
+            ]);
+        }
+
+        $sourceAirportIds = $sourceCity->airports->pluck('id');
+        $destinationAirportIds = $destinationCity->airports->pluck('id');
+
+        $directRoutes = Route::whereIn('source_airport_id', $sourceAirportIds)->whereIn('destination_airport_id', $destinationAirportIds)->get();
+
+        $price = '';
+        foreach ($directRoutes as $directRoute) {
+            $price = $directRoute->price;
+        }
+
+        $response = [
+            'source' => $sourceCity->name,
+            'destination' => $destinationCity->name,
+            'price' => $price,
+        ];
+
+        return collect([
+            'success' => true,
+            'routes' => $response
         ]);
     }
 
