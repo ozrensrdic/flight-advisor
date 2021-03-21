@@ -57,11 +57,11 @@
         </div>
     </div>
     <div class="row mt-5">
-
-        <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#newComment{{$city->id}}">
-            Add new comment
-        </button>
-
+        @if (auth()->user()->isRegularUser())
+            <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#newComment{{$city->id}}">
+                Add new comment
+            </button>
+        @endif
         <div class="modal fade" id="newComment{{$city->id}}" tabindex="-1" role="dialog" aria-labelledby="NewComment" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <form action="{{route('comments.store')}}" method="POST">

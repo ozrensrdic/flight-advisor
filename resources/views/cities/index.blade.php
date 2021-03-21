@@ -7,11 +7,13 @@
             <div class="pull-left">
                 <h2>Preview cities</h2>
             </div>
+            @if (auth()->user()->isAdminUser())
             <div class="pull-right">
                 <a class="btn btn-success" href="{{ route('cities.create') }}">
                     {{ __('Add a city') }}
                 </a>
             </div>
+            @endif
         </div>
 
         @if ($message = Session::get('success'))

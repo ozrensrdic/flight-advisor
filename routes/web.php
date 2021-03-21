@@ -17,7 +17,7 @@ use App\Http\Controllers\HomeController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('cities.index');
 });
 
 Auth::routes();
@@ -25,14 +25,18 @@ Auth::routes();
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
 // routes.php
-Route::group(array('prefix' => 'cities'), function() {
-    Route::get('search', [CityController::class, 'search'])->name('cities.search');
-    Route::get('search/results', [CityController::class, 'results'])->name('cities.search.results');
-    Route::get('route', [CityController::class, 'route'])->name('cities.route');
-    Route::get('route/details', [CityController::class, 'flightDetails'])->name('cities.route.details');
+Route::prefix('cities')->group(function () {
+    Route::group([
+        'middleware' => 'auth',
+    ], function() {
+        Route::get('search', [CityController::class, 'search'])->name('cities.search');
+        Route::get('search/results', [CityController::class, 'results'])->name('cities.search.results');
+        Route::get('route', [CityController::class, 'route'])->name('cities.route');
+        Route::get('route/details', [CityController::class, 'flightDetails'])->name('cities.route.details');
+    });
 });
 
-Route::resource('cities', CityController::class);
+Route::resource('cities', CityController::class)->middleware(['auth']);
 
-Route::resource('comments', CommentController::class);
+Route::resource('comments', CommentController::class)->middleware(['auth']);
 
