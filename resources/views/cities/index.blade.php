@@ -57,10 +57,11 @@
                                         Delete
                                     </button>
                                 </form>
+                            @elseif (count($city->getCommentsPreview(5)))
+                                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#comments{{$city->id}}" aria-expanded="false" aria-controls="comments{{$city->id}}">
+                                    Show 5 last comments
+                                </button>
                             @endif
-                            <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#comments{{$city->id}}" aria-expanded="false" aria-controls="comments{{$city->id}}">
-                                Show 5 last comments
-                            </button>
                         @endauth
                     </td>
                 </tr>
