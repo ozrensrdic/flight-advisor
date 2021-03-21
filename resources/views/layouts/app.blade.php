@@ -37,6 +37,7 @@
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav mr-auto">
                         <li><a class="nav-link" href="{{ route('cities.index') }}">Cities</a></li>
+                        <li><a class="nav-link" href="{{ route('cities.search') }}">Search</a></li>
                         <li><a class="nav-link" href="{{ route('cities.route') }}">Find route</a></li>
                     </ul>
 

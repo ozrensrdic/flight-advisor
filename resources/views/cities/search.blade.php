@@ -65,7 +65,8 @@
                 },
                 success: function(data) {
                     table.empty()
-                    if (data.cities) {
+                    if (data.cities && data.cities.length !== 0) {
+                        console.log(data.cities.length);
                         $.each(data.cities, function( index, city ) {
                             let tr = `<tr>
                                     <td>${city.name}</td>
@@ -82,6 +83,10 @@
 
                             table.append(tr + commentTr);
                         });
+
+                        table.removeClass('collapse');
+                    } else {
+                        table.append(`<tr><td colspan="3">no results</td></tr>`);
 
                         table.removeClass('collapse');
                     }

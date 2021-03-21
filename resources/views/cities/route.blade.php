@@ -5,7 +5,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-12 margin-tb">
             <div class="pull-left">
-                <h2>Search</h2>
+                <h2>Routes</h2>
             </div>
         </div>
     </div>
