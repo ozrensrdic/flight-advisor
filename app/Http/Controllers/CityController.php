@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Response;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
+use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 
 class CityController extends Controller
 {
@@ -19,17 +20,20 @@ class CityController extends Controller
      */
     public function index(): View
     {
-        $cities = City::all();
-
-        return view('cities.index', compact('cities'));
+        return view('cities.index', ['cities' => City::all()]);
     }
 
     /**
-     * @return Response
+     * @return View
      */
     public function create(): View
     {
         return view('cities.create');
+    }
+
+    public function search()
+    {
+        return view('cities.search');
     }
 
     /**
@@ -66,13 +70,27 @@ class CityController extends Controller
 
     /**
      * @param  City  $city
-     * @return Response
+     * @return View
      */
     public function show(City $city): View
     {
         $comments = $city->comments()->get()->sortByDesc('updated_at');
 
         return view('cities.show', compact('city', 'comments'));
+    }
+
+    /**
+     * @param Request $request
+     * @return Collection
+     */
+    public function results(Request $request)
+    {
+        $city = $request->query('city');
+        $cities = City::with('comments')->where('name', 'like', '%' . $city . '%')->get();
+
+        return collect([
+            'cities' => $cities,
+        ]);
     }
 
     /**
@@ -87,9 +105,9 @@ class CityController extends Controller
     /**
      * @param  Request  $request
      * @param  City $city
-     * @return Response
+     * @return RedirectResponse
      */
-    public function update(Request $request, City $city): Response
+    public function update(Request $request, City $city): RedirectResponse
     {
         $request->validate([
             'name' => 'required',
@@ -107,7 +125,7 @@ class CityController extends Controller
      * @param  City  $city
      * @return Response
      */
-    public function destroy(City $city): Response
+    public function destroy(City $city): RedirectResponse
     {
         $city->delete();
 
@@ -170,7 +188,6 @@ class CityController extends Controller
             try {
                 $sourceAirport = (int) $csvLine[3];
                 $destinationAirport = (int) $csvLine[5];
-                $airlineId = $csvLine[1];
 
                 $routeData = [
                     'airline' => $csvLine[0],

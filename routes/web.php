@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\HomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,8 +22,15 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+// routes.php
+Route::group(array('prefix' => 'cities'), function() {
+    Route::get('search', [CityController::class, 'search'])->name('cities.search');
+    Route::get('search/results', [CityController::class, 'results'])->name('cities.search.results');
+});
 
 Route::resource('cities', CityController::class);
+
 Route::resource('comments', CommentController::class);
 
