@@ -165,6 +165,7 @@ class CityController extends Controller
         foreach ($sourceAirportIds as $sourceAirportId) {
             $routesFromSource = Route::where('source_airport_id', $sourceAirportId)->get();
 
+            $newSource = [];
             /** @var Route $routeFromSource */
             foreach ($routesFromSource as $routeFromSource) {
                 $arrivalDestination = $routeFromSource->destinationAirport()->pluck('id')->toArray();
@@ -174,13 +175,16 @@ class CityController extends Controller
                     $newSource = $arrivalDestination;
                 } else {
                     $price = $price + $routeFromSource->price;
-                    return [$price, $stops];
+                    return [number_format($price, 2), $stops];
                 }
             }
             $price = $price + $routeFromSource->price;
             $stops++;
 
-            return $this->findRoute($newSource, $destinationAirportIds, $price, $stops);
+            if (!empty($newSource)) {
+                return $this->findRoute($newSource, $destinationAirportIds, $price, $stops);
+            }
+
         }
         return [];
     }
