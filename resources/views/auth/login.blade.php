@@ -65,6 +65,21 @@
                             </div>
                         </div>
                     </form>
+                    <div class="card-body">
+                        <div class="col-form-label text-md-left">Credentials:</div>
+                        <div class="col-form-label text-md-left text-success">Admin:</div>
+                        <span>
+                            Username: <strong class="col-form-label text-success">admin</strong>, Password: <strong class="text-success">123123</strong>
+                        </span>
+                        <div class="col-form-label text-md-left text-primary">Pierre:</div>
+                        <span>
+                            Username: <strong class="col-form-label text-primary">pierre</strong>, Password: <strong class="text-primary">123123</strong>
+                        </span>
+                        <div class="col-form-label text-md-left text-primary">Isabella:</div>
+                        <span>
+                            Username: <strong class="col-form-label text-primary">isabella</strong>, Password: <strong class="text-primary">123123</strong>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
