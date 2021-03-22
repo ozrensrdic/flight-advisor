@@ -127,16 +127,23 @@ class CityController extends Controller
         $sourceAirportIds = $sourceCity->airports->pluck('id');
         $destinationAirportIds = $destinationCity->airports->pluck('id');
 
-        $directRoutes = Route::whereIn('source_airport_id', $sourceAirportIds)->whereIn('destination_airport_id', $destinationAirportIds)->get();
+        $indirectRoutesData = $this->findRoute($sourceAirportIds->toArray(), $destinationAirportIds->toArray(), 0, 0);
 
-        $price = '';
-        foreach ($directRoutes as $directRoute) {
-            $price = $directRoute->price;
+        if ($indirectRoutesData) {
+            list($price, $stops) = $indirectRoutesData;
+        }
+
+        if ($price === 0) {
+            return collect([
+                'success' => false,
+                'error' => 'No flight'
+            ]);
         }
 
         $response = [
             'source' => $sourceCity->name,
             'destination' => $destinationCity->name,
+            'stops' => $stops,
             'price' => $price,
         ];
 
@@ -144,6 +151,59 @@ class CityController extends Controller
             'success' => true,
             'routes' => $response
         ]);
+    }
+
+    /**
+     * @param array $sourceAirportIds
+     * @param array $destinationAirportIds
+     * @param float $price
+     * @param int $stops
+     * @return array
+     */
+    private function findRoute(array $sourceAirportIds, array $destinationAirportIds, float $price, int $stops): array
+    {
+        foreach ($sourceAirportIds as $sourceAirportId) {
+            $routesFromSource = Route::where('source_airport_id', $sourceAirportId)->get();
+
+            /** @var Route $routeFromSource */
+            foreach ($routesFromSource as $routeFromSource) {
+                $arrivalDestination = $routeFromSource->destinationAirport()->pluck('id')->toArray();
+
+                $destinationAirportsFound = in_array($arrivalDestination[0], $destinationAirportIds);
+                if (!$destinationAirportsFound) {
+                    $newSource = $arrivalDestination;
+                } else {
+                    $price = $price + $routeFromSource->price;
+                    return [$price, $stops];
+                }
+            }
+            $price = $price + $routeFromSource->price;
+            $stops++;
+
+            return $this->findRoute($newSource, $destinationAirportIds, $price, $stops);
+        }
+        return [];
+    }
+
+    /**
+     * @param $sourceAirportIds
+     * @param $destinationAirportIds
+     * @return array
+     */
+    private function directRoutes($sourceAirportIds, $destinationAirportIds): array
+    {
+        $directRoutes = Route::whereIn('source_airport_id', $sourceAirportIds)
+            ->whereIn('destination_airport_id', $destinationAirportIds)
+            ->get();
+
+        $price = 0;
+        foreach ($directRoutes as $directRoute) {
+            if (!$price || $price < $directRoute->price) {
+                $price = $directRoute->price;
+            }
+        }
+
+        return [$price, 0];
     }
 
     /**

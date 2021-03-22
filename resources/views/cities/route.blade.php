@@ -50,11 +50,6 @@
     </div>
     <div class="row mt-5">
         <table class="table table-bordered" id="routes">
-            <tr>
-                <th>Source city</th>
-                <th>Destination city</th>
-                <th>Price</th>
-            </tr>
         </table>
     </div>
 
@@ -98,11 +93,13 @@
                             `<tr>
                                 <th>Source city</th>
                                 <th>Destination city</th>
+                                <th>Stops</th>
                                 <th>Price</th>
                             </tr>
                             <tr>
                                 <td>${data.routes.source}</td>
                                 <td>${data.routes.destination}</td>
+                                <td>${data.routes.stops}</td>
                                 <td>${data.routes.price}</td>
                             </tr>`
                         );
