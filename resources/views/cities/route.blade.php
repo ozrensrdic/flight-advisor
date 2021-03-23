@@ -50,6 +50,18 @@
     </div>
     <div class="row mt-5">
         <table class="table table-bordered" id="routes">
+            <thead>
+                <tr>
+                    <th>Source city</th>
+                    <th>Destination city</th>
+                    <th>Stops</th>
+                    <th>Route Ids</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
         </table>
     </div>
 
@@ -87,26 +99,26 @@
                     _token: $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(data) {
-                    table.empty();
-                    if (data.routes) {
-                        table.append(
-                            `<tr>
-                                <th>Source city</th>
-                                <th>Destination city</th>
-                                <th>Stops</th>
-                                <th>Price</th>
-                            </tr>
-                            <tr>
-                                <td>${data.routes.source}</td>
-                                <td>${data.routes.destination}</td>
-                                <td>${data.routes.stops}</td>
-                                <td>${data.routes.price}</td>
-                            </tr>`
-                        );
+                    $('#routes tbody').empty();
+                    console.log(data);
+                    if (data.success && data.routes) {
+                        console.log('adadd');
+                        $.each(data.routes, function( index, route ) {
+                            table.append(
+                                `<tr>
+                                    <td>${route.source}</td>
+                                    <td>${route.destination}</td>
+                                    <td>${route.stopCount}</td>
+                                    <td>${route.routes}</td>
+                                    <td>${route.price}</td>
+                                </tr>`
+                            );
+                        });
+
                     } else {
                         table.append(
                             `<tr>
-                                <td colspan="3">No results</td>
+                                <td colspan="5">No results</td>
                             </tr>`
                         );
                     }

@@ -16,6 +16,36 @@ use Illuminate\Support\Collection;
 class CityController extends Controller
 {
     /**
+     * @var int
+     */
+    private $i = 0;
+
+    /**
+     * @var array
+     */
+    private $visitedAirports = [];
+
+    /**
+     * @var array
+     */
+    private $usedRoutes = [];
+
+    /**
+     * @var array
+     */
+    private $routes = [];
+
+    /**
+     * @var array
+     */
+    private $routePrice = [];
+
+    /**
+     * @var array
+     */
+    private $routesDetails = [];
+
+    /**
      * @return View
      */
     public function index(): View
@@ -127,25 +157,32 @@ class CityController extends Controller
         $sourceAirportIds = $sourceCity->airports->pluck('id');
         $destinationAirportIds = $destinationCity->airports->pluck('id');
 
-        $indirectRoutesData = $this->findRoute($sourceAirportIds->toArray(), $destinationAirportIds->toArray(), 0, 0);
+        $this->findRoute($sourceAirportIds->toArray(), $destinationAirportIds->toArray(), 0);
 
-        if ($indirectRoutesData) {
-            list($price, $stops) = $indirectRoutesData;
-        }
-
-        if ($price === 0) {
+        if (empty($this->routesDetails)) {
             return collect([
                 'success' => false,
                 'error' => 'No flight'
             ]);
         }
 
-        $response = [
-            'source' => $sourceCity->name,
-            'destination' => $destinationCity->name,
-            'stops' => $stops,
-            'price' => $price,
-        ];
+        $response = [];
+
+        foreach ($this->routesDetails as $detail) {
+            list($price, $routeIds) = $detail;
+
+            $response[] = [
+                'source' => $sourceCity->name,
+                'destination' => $destinationCity->name,
+                'routes' => $routeIds,
+                'stopCount' => count($routeIds) - 1,
+                'price' => number_format($price, 2),
+            ];
+        }
+
+        usort($response, function($a, $b) {
+            return $a['price'] <=> $b['price'];
+        });
 
         return collect([
             'success' => true,
@@ -157,36 +194,75 @@ class CityController extends Controller
      * @param array $sourceAirportIds
      * @param array $destinationAirportIds
      * @param float $price
-     * @param int $stops
-     * @return array
      */
-    private function findRoute(array $sourceAirportIds, array $destinationAirportIds, float $price, int $stops): array
+    private function findRoute(array $sourceAirportIds, array $destinationAirportIds, float $price)
     {
+        $newSource = [];
         foreach ($sourceAirportIds as $sourceAirportId) {
-            $routesFromSource = Route::where('source_airport_id', $sourceAirportId)->get();
+            $sourceRoutes = Route::where('source_airport_id', $sourceAirportId)
+                ->whereNotIn('destination_airport_id', $this->visitedAirports)
+                ->get();
 
-            $newSource = [];
+            if (!in_array($sourceAirportId, $this->visitedAirports)) {
+                $this->visitedAirports[] = $sourceAirportId;
+            }
+
+            $this->i++;
             /** @var Route $routeFromSource */
-            foreach ($routesFromSource as $routeFromSource) {
-                $arrivalDestination = $routeFromSource->destinationAirport()->pluck('id')->toArray();
+            foreach ($sourceRoutes as $sourceRoute) {
+                /**
+                 * if destination route found
+                 */
+                if (in_array($sourceRoute->destination_airport_id, $destinationAirportIds)) {
+                    foreach ($destinationAirportIds as $destinationAirportId) {
+                        if ($sourceRoute->destination_airport_id === $destinationAirportId) {
+                            if (isset($this->routes[$sourceRoute->source_airport_id])) {
+                                $routes = $this->routes[$sourceRoute->source_airport_id] . ' ' . $sourceRoute->id;
+                            } else {
+                                $routes = $sourceRoute->id;
+                            }
 
-                $destinationAirportsFound = in_array($arrivalDestination[0], $destinationAirportIds);
-                if (!$destinationAirportsFound) {
-                    $newSource = $arrivalDestination;
+                            if (isset($this->routePrice[$sourceRoute->source_airport_id])) {
+                                $price = $this->routePrice[$sourceRoute->source_airport_id] + $sourceRoute->price;
+                            } else {
+                                $price = $sourceRoute->price;
+                            }
+
+                            $this->routesDetails[] = [$price, explode(' ', $routes)];
+                        }
+                    }
+                    continue;
                 } else {
-                    $price = $price + $routeFromSource->price;
-                    return [number_format($price, 2), $stops];
+                    $this->usedRoutes[] = $sourceRoute->id;
+
+                    if (!in_array($sourceRoute->destination_airport_id, $newSource)) {
+                        if (isset($this->routePrice[$sourceRoute->source_airport_id])) {
+                            $this->routePrice[$sourceRoute->destination_airport_id] = $this->routePrice[$sourceRoute->source_airport_id] + $sourceRoute->price;
+                        } else {
+                            $this->routePrice[$sourceRoute->destination_airport_id] = $sourceRoute->price;
+                        }
+
+                        if (isset($this->routes[$sourceRoute->source_airport_id])) {
+                            $this->routes[$sourceRoute->destination_airport_id] = $this->routes[$sourceRoute->source_airport_id] . ' ' . $sourceRoute->id;
+                        } else {
+                            $this->routes[$sourceRoute->destination_airport_id] = $sourceRoute->id;
+                        }
+
+                        $newSource[] = $sourceRoute->destination_airport_id;
+                    }
+                }
+
+                if (!in_array($sourceRoute->source_airport_id, $this->visitedAirports)) {
+                    $this->visitedAirports[] = $sourceRoute->source_airport_id;
                 }
             }
-            $price = $price + $routeFromSource->price;
-            $stops++;
 
-            if (!empty($newSource)) {
-                return $this->findRoute($newSource, $destinationAirportIds, $price, $stops);
+            if ($this->i < 300) {
+                if (!empty($newSource)) {
+                    $this->findRoute($newSource, $destinationAirportIds, $price);
+                }
             }
-
         }
-        return [];
     }
 
     /**

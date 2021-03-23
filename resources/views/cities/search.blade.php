@@ -29,18 +29,21 @@
                             @enderror
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
     <div class="row mt-5">
-        <table class="table table-bordered collapse" id="comments">
-            <tr>
-                <th>City</th>
-                <th>Country</th>
-                <th>Description</th>
-            </tr>
+        <table class="table table-bordered collapse"  id="comments">
+            <thead>
+                <tr>
+                    <th>City</th>
+                    <th>Country</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
         </table>
     </div>
 
@@ -64,7 +67,7 @@
                     _token: $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(data) {
-                    table.empty()
+                    $('#comments tbody').empty();
                     if (data.cities && data.cities.length !== 0) {
                         console.log(data.cities.length);
                         $.each(data.cities, function( index, city ) {
