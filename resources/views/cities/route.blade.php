@@ -84,6 +84,8 @@
         function allowRequest() {
             if (source && destination && (source !== destination)) {
                 $('button').prop('disabled', false);
+            } else {
+                $('button').prop('disabled', true);
             }
         }
 
@@ -102,7 +104,6 @@
                     $('#routes tbody').empty();
                     console.log(data);
                     if (data.success && data.routes) {
-                        console.log('adadd');
                         $.each(data.routes, function( index, route ) {
                             table.append(
                                 `<tr>
