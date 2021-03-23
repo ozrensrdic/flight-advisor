@@ -106,12 +106,12 @@
                     if (data.success && data.routes) {
                         $.each(data.routes, function( index, route ) {
                             table.append(
-                                `<tr>
+                                `<tr class="${ index === 0 ? 'alert-info' : ''}">
                                     <td>${route.source}</td>
                                     <td>${route.destination}</td>
                                     <td>${route.stopCount}</td>
                                     <td>${route.routes}</td>
-                                    <td>${route.price}</td>
+                                    <td>${route.price} ${index === 0 ? '*<span class="small">best deal</span>' : ''}</td>
                                 </tr>`
                             );
                         });
