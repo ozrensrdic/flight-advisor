@@ -28,11 +28,6 @@ class CityController extends Controller
     /**
      * @var array
      */
-    private $usedRoutes = [];
-
-    /**
-     * @var array
-     */
     private $routes = [];
 
     /**
@@ -171,11 +166,12 @@ class CityController extends Controller
         foreach ($this->routesDetails as $detail) {
             list($price, $routeIds) = $detail;
 
+            $count = count(explode(',', $routeIds)) - 1;
             $response[] = [
                 'source' => $sourceCity->name,
                 'destination' => $destinationCity->name,
                 'routes' => $routeIds,
-                'stopCount' => count($routeIds) - 1,
+                'stopCount' => $count,
                 'price' => number_format($price, 2),
             ];
         }
@@ -210,50 +206,19 @@ class CityController extends Controller
             $this->i++;
             /** @var Route $routeFromSource */
             foreach ($sourceRoutes as $sourceRoute) {
+                $this->setRoutesAndPrices($sourceRoute);
+
                 /**
                  * if destination route found
                  */
                 if (in_array($sourceRoute->destination_airport_id, $destinationAirportIds)) {
                     foreach ($destinationAirportIds as $destinationAirportId) {
                         if ($sourceRoute->destination_airport_id === $destinationAirportId) {
-                            if (isset($this->routes[$sourceRoute->source_airport_id])) {
-                                $routes = $this->routes[$sourceRoute->source_airport_id] . ' ' . $sourceRoute->id;
-                            } else {
-                                $routes = $sourceRoute->id;
-                            }
-
-                            if (isset($this->routePrice[$sourceRoute->source_airport_id])) {
-                                $price = $this->routePrice[$sourceRoute->source_airport_id] + $sourceRoute->price;
-                            } else {
-                                $price = $sourceRoute->price;
-                            }
-
-                            $this->routesDetails[] = [$price, explode(' ', $routes)];
+                            $this->setTripDetails($sourceRoute->destination_airport_id);
                         }
                     }
-                    continue;
                 } else {
-                    $this->usedRoutes[] = $sourceRoute->id;
-
-                    if (!in_array($sourceRoute->destination_airport_id, $newSource)) {
-                        if (isset($this->routePrice[$sourceRoute->source_airport_id])) {
-                            $this->routePrice[$sourceRoute->destination_airport_id] = $this->routePrice[$sourceRoute->source_airport_id] + $sourceRoute->price;
-                        } else {
-                            $this->routePrice[$sourceRoute->destination_airport_id] = $sourceRoute->price;
-                        }
-
-                        if (isset($this->routes[$sourceRoute->source_airport_id])) {
-                            $this->routes[$sourceRoute->destination_airport_id] = $this->routes[$sourceRoute->source_airport_id] . ' ' . $sourceRoute->id;
-                        } else {
-                            $this->routes[$sourceRoute->destination_airport_id] = $sourceRoute->id;
-                        }
-
-                        $newSource[] = $sourceRoute->destination_airport_id;
-                    }
-                }
-
-                if (!in_array($sourceRoute->source_airport_id, $this->visitedAirports)) {
-                    $this->visitedAirports[] = $sourceRoute->source_airport_id;
+                    $newSource[] = $sourceRoute->destination_airport_id;
                 }
             }
 
@@ -263,6 +228,35 @@ class CityController extends Controller
                 }
             }
         }
+    }
+
+    /**
+     * @param Route $sourceRoute
+     */
+    private function setRoutesAndPrices(Route $sourceRoute)
+    {
+        if (isset($this->routePrice[$sourceRoute->source_airport_id])) {
+            $this->routePrice[$sourceRoute->destination_airport_id] = $this->routePrice[$sourceRoute->source_airport_id] + $sourceRoute->price;
+        } else {
+            $this->routePrice[$sourceRoute->destination_airport_id] = $sourceRoute->price;
+        }
+
+        if (isset($this->routes[$sourceRoute->source_airport_id])) {
+            $this->routes[$sourceRoute->destination_airport_id] = $this->routes[$sourceRoute->source_airport_id] . ',' . $sourceRoute->id;
+        } else {
+            $this->routes[$sourceRoute->destination_airport_id] = $sourceRoute->id;
+        }
+    }
+
+    /**
+     * @param $destinationAirportId
+     */
+    private function setTripDetails($destinationAirportId)
+    {
+        $this->routesDetails[$this->routes[$destinationAirportId]] = [
+            $this->routePrice[$destinationAirportId],
+            $this->routes[$destinationAirportId]
+        ];
     }
 
     /**
